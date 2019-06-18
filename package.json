@@ -1,0 +1,13 @@
+{
+  "name": "n-queen",
+  "version": "1.0.0",
+  "description": "Find all posible solutions for the n-queen problem",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node index.js",
+    "profile": "tsc && node --prof --max_old_space_size=4096 index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Roman Lyubimov <raman.liubimau@gmail.com>",
+  "license": "MIT"
+}
