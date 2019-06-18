@@ -1,23 +1,34 @@
 class State {
   constructor(
-    public readonly exclCols: Set<number> = new Set(),
-    public readonly exclCell: Set<number> = new Set(),
+    public readonly exclCols: number[] = [],
+    public readonly exclCell: number[] = [],
+    public readonly boardSize: number = 8,
     public queenCount = 0,
     public row: number = 0
   ) {
+    if (!exclCols.length) {
+      for (let i = 0; i < boardSize; i++) {
+        exclCols.push(0);
+      }
+    }
 
+    if (!exclCell.length) {
+      for (let i = 0; i < (boardSize * boardSize); i++) {
+        exclCell.push(0);
+      }
+    }
   }
 
   getVacantCells(board: Board): number[] {
     const vacant = [];
     for (let i = 0; i < board.size; i++) {
-      if (this.exclCols.has(i)) {
+      if (this.exclCols[i] === 1) {
         continue;
       }
 
       const cell = board.convertIndex(i, this.row);
 
-      if (this.exclCell.has(cell)) {
+      if (this.exclCell[cell] === 1) {
         continue;
       }
 
@@ -27,9 +38,9 @@ class State {
   }
 
   clone(): State {
-    const exclCols = new Set(this.exclCols);
-    const exclCell = new Set(this.exclCell);
-    return new State(exclCols, exclCell, this.queenCount, this.row);
+    const exclCols = ([] as number[]).concat(this.exclCols); // TS2345
+    const exclCell = ([] as number[]).concat(this.exclCell); // TS2345
+    return new State(exclCols, exclCell, this.boardSize, this.queenCount, this.row);
   }
 }
 
@@ -57,7 +68,7 @@ class Board {
 
     const [x, y] = this.convertXY(i);
 
-    clonedState.exclCols.add(x);
+    clonedState.exclCols[x] = 1;
 
     for (let k = 1; k < this.size; k++) {
       const y1 = y + k;
@@ -70,11 +81,11 @@ class Board {
       const x2 = x - k;
 
       if (x1 < this.size) {
-        clonedState.exclCell.add(this.convertIndex(x1, y1));
+        clonedState.exclCell[this.convertIndex(x1, y1)] = 1;
       }
 
       if (x2 >= 0) {
-        clonedState.exclCell.add(this.convertIndex(x2, y1));
+        clonedState.exclCell[this.convertIndex(x2, y1)] = 1;
       }
     }
 
@@ -114,7 +125,9 @@ class Board {
   }
 }
 
-function findSolutions(boardSize: number): [number, Board[]] {
+function findSolutions(boardSize: number): [number, Board[], number] {
+  const startTime = process.hrtime();
+
   const stack: {
     board: Board;
     state: State;
@@ -160,8 +173,10 @@ function findSolutions(boardSize: number): [number, Board[]] {
     stack.push({board, state});
   }
 
-  return [i, solutions];
+  const diffTime = process.hrtime(startTime);
+
+  return [i, solutions, diffTime[0] * 1e9 + diffTime[1]];
 }
 
-const [n, solutions] = findSolutions(8);
-console.log(`${n} - ${solutions.length}`);
+const [n, solutions, elapsed] = findSolutions(8);
+console.log(`${n} - ${solutions.length}(${elapsed / 1e6}ms)`);
